@@ -1,0 +1,12 @@
+{% extends "gestion/base.html" %}
+{% block content %}
+<h1>{% if object %}Editar Cliente{% else %}Nuevo Cliente{% endif %}</h1>
+
+<form method="post">
+{% csrf_token %}
+{{ form.as_p }}
+<button type="submit">Guardar</button>
+</form>
+
+<a href="{% url 'cliente_list' %}">Volver al listado</a>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "gestion/base.html" %}
+{% block content %}
+<h1>Eliminar Cliente</h1>
+<p>¿Confirmas que deseas eliminar a <strong>{{ object.nombre }}</strong>?</p>
+
+<form method="post">
+{% csrf_token %}
+<button type="submit">Sí, eliminar</button>
+</form>
+
+<a href="{% url 'cliente_list' %}">Cancelar</a>
+{% endblock %}
