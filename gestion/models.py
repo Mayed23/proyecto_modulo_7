@@ -2,10 +2,15 @@ from django.db import models
 
 
 class Cliente(models.Model):
+    TIPO_CHOICES = [
+        ('natural', 'Persona Natural'),
+        ('juridica', 'Persona Jurídica'),
+    ]
     nombre = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    tipo_cliente = models.CharField(max_length=10, choices=TIPO_CHOICES, default='natural')
 
     def __str__(self):
         return self.nombre
@@ -20,21 +25,34 @@ class Etiqueta(models.Model):
 
 class Cuenta(models.Model):
     clientes = models.ManyToManyField(
-        Cliente, related_name='cuenta'
+        Cliente, related_name='cuentas'
     )
     numero_cuenta = models.CharField(max_length=30, unique=True)
     saldo = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    etiqueta = models.OneToOneField(
+    etiqueta = models.ForeignKey(
         Etiqueta,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='cuenta'
+        related_name='cuentas'
     )
 
     def __str__(self):
         return self.numero_cuenta
+
+    @property
+    def es_conjunta(self):
+        return self.clientes.count() > 1
+
+    @property
+    def titularidad(self):
+        if self.es_conjunta:
+            return "Conjunta"
+        cliente = self.clientes.first()
+        if cliente and cliente.tipo_cliente == 'juridica':
+            return "Jurídica"
+        return "Personal"
 
 
 class Transaccion(models.Model):
