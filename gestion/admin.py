@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cliente, Etiqueta, Transaccion, Cuenta
+from .models import Cliente, Etiqueta, Transaccion, Cuenta, PerfilCliente
 
 
 @admin.register(Cliente)
@@ -53,4 +53,9 @@ class TransaccionAdmin(admin.ModelAdmin):
         'tipo',
         'descripcion'
     )
+
+@admin.register(PerfilCliente)
+class PerfilClienteAdmin(admin.ModelAdmin):
+    list_display = ('cliente', 'rut', 'direccion')
+    search_fields = ('rut', 'cliente__nombre')
 # Register your models here.
