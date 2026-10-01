@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     const formatoCLP = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' });
 
+
     document.querySelectorAll('.aw-cuenta-selector').forEach(grupo => {
         const botones = grupo.querySelectorAll('.btn-cuenta');
         const card = grupo.closest('.aw-card');
         const saldoEl = card.querySelector('.aw-saldo-cliente');
-        const numeroEl = card.querySelector('.aw-numero-cuenta');
 
         function animarSaldo(target) {
             let current = 0;
@@ -22,15 +22,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function seleccionar(boton) {
-            botones.forEach(b => b.classList.remove('active'));
-            boton.classList.add('active');
-            numeroEl.textContent = boton.dataset.numero;
+            botones.forEach(b => b.classList.remove('is-selected'));
+            boton.classList.add('is-selected');
             animarSaldo(parseFloat(boton.dataset.saldo));
         }
 
         botones.forEach(boton => {
             boton.addEventListener('click', () => seleccionar(boton));
         });
-
     });
+
+    const buscador = document.getElementById('buscador_clientes');
+    const selectClientes = document.getElementById('id_clientes');
+
+    if (buscador && selectClientes) {
+        buscador.addEventListener('input', () => {
+            const texto = buscador.value.toLowerCase();
+            Array.from(selectClientes.options).forEach(opcion => {
+                const coincide = opcion.textContent.toLowerCase().includes(texto);
+                opcion.hidden = !coincide;
+            });
+        });
+    }
 });

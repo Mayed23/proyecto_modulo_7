@@ -49,6 +49,7 @@ class Cuenta(models.Model):
         blank=True,
         related_name='cuentas'
     )
+    activa = models.BooleanField(default=True)
 
     def __str__(self):
         return self.numero_cuenta
@@ -66,6 +67,9 @@ class Cuenta(models.Model):
             return "Jurídica"
         return "Personal"
 
+    @property
+    def puede_eliminarse(self):
+        return self.saldo == 0 and not self.transacciones.exists()
 
 class Transaccion(models.Model):
     TIPO_CHOICES = [
