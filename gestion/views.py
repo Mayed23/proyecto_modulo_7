@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .models import Cliente, PerfilCliente, Cuenta, Transaccion
-from .forms import ClienteForm, PerfilClienteForm, CuentaForm
+from .forms import ClienteForm, PerfilClienteForm, CuentaForm, TransaccionForm
 
 
 class ClienteListView(LoginRequiredMixin, ListView):
@@ -165,4 +165,71 @@ class CuentaDeleteView(LoginRequiredMixin, DeleteView):
         numero = self.object.numero_cuenta
         respuesta = super().form_valid(form)
         messages.success(self.request, f"Cuenta '{numero}' eliminada correctamente.")
+        return respuesta
+
+class TransaccionListView(LoginRequiredMixin, ListView):
+    model = Transaccion
+    template_name = 'gestion/transaccion_list.html'
+    context_object_name = 'transacciones'
+    paginate_by = 15
+    ordering = ['-fecha']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        cuenta_id = self.request.GET.get('cuenta')
+        cliente_id = self.request.GET.get('cliente')
+
+        if cuenta_id:
+            queryset = queryset.filter(cuenta_id=cuenta_id)
+        if cliente_id:
+            queryset = queryset.filter(cuenta__clientes__id=cliente_id)
+
+        return queryset.distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['cuentas'] = Cuenta.objects.filter(activa=True)
+        context['clientes'] = Cliente.objects.all()
+        context['cuenta_seleccionada'] = self.request.GET.get('cuenta', '')
+        context['cliente_seleccionado'] = self.request.GET.get('cliente', '')
+        return context
+
+
+class TransaccionCreateView(LoginRequiredMixin, CreateView):
+    model = Transaccion
+    form_class = TransaccionForm
+    template_name = 'gestion/transaccion_form.html'
+    success_url = reverse_lazy('transaccion_list')
+
+    def form_valid(self, form):
+        respuesta = super().form_valid(form)
+        cuenta = self.object.cuenta
+
+        if self.object.tipo == 'deposito':
+            cuenta.saldo += self.object.monto
+            cuenta.save()
+
+        elif self.object.tipo == 'retiro':
+            cuenta.saldo -= self.object.monto
+            cuenta.save()
+
+        elif self.object.tipo == 'transferencia':
+            destino = self.object.cuenta_destino
+
+            cuenta.saldo -= self.object.monto
+            cuenta.save()
+
+            destino.saldo += self.object.monto
+            destino.save()
+
+            Transaccion.objects.create(
+                cuenta=destino,
+                tipo='transferencia',
+                monto=self.object.monto,
+                descripcion=f"Transferencia recibida de {cuenta.numero_cuenta}" + (
+                    f" — {self.object.descripcion}" if self.object.descripcion else ""
+                ),
+            )
+
+        messages.success(self.request, "Transacción registrada correctamente.")
         return respuesta

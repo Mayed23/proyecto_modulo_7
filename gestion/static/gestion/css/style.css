@@ -3,7 +3,7 @@
     --aw-text: #eef1fb;
     --aw-primary: #6c5ce7;
     --aw-primary-dark: #4834d4;
-    --aw-text-muted: #9aa3c0;
+    --aw-text-muted: rgba(189 202 215 / 75%);
     --aw-card-border: rgba(255, 255, 255, 0.083);
     --aw-radius: 18px;
     --aw-accent: #00e6a8;

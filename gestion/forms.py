@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente, PerfilCliente, Cuenta
+from .models import Cliente, PerfilCliente, Cuenta, Transaccion
 from django.contrib.auth.forms import AuthenticationForm
 
 class ClienteForm(forms.ModelForm):
@@ -95,49 +95,54 @@ class CuentaForm(forms.ModelForm):
             raise forms.ValidationError("Ya existe una cuenta con este número (no distingue mayúsculas de minúsculas).")
         return numero
 
-'''from django import forms
-from .models import Cliente, Cuenta, Etiqueta, Transaccion
-
-
-class ClienteForm(forms.ModelForm):
-    class Meta:
-        model = Cliente
-        fields = ['nombre', 'email', 'telefono']
-        widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
-        }
-
-
-class EtiquetaForm(forms.ModelForm):
-    class Meta:
-        model = Etiqueta
-        fields = ['nombre']
-        widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
-        }
-
-
-class CuentaForm(forms.ModelForm):
-    class Meta:
-        model = Cuenta
-        fields = ['clientes', 'numero_cuenta', 'saldo', 'etiqueta']
-        widgets = {
-            'clientes': forms.SelectMultiple(attrs={'class': 'form-control'}),
-            'numero_cuenta': forms.TextInput(attrs={'class': 'form-control'}),
-            'saldo': forms.NumberInput(attrs={'class': 'form-control'}),
-            'etiqueta': forms.Select(attrs={'class': 'form-control'}),
-        }
-
-
 class TransaccionForm(forms.ModelForm):
     class Meta:
         model = Transaccion
-        fields = ['cuenta', 'tipo', 'monto', 'descripcion']
-        widgets = {
-            'cuenta': forms.Select(attrs={'class': 'form-control'}),
-            'tipo': forms.Select(attrs={'class': 'form-control'}),
-            'monto': forms.NumberInput(attrs={'class': 'form-control'}),
-            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-        }'''
+        fields = ['cuenta', 'tipo', 'cuenta_destino', 'monto', 'descripcion']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cuentas_validas = Cuenta.objects.filter(activa=True).exclude(clientes__isnull=True).distinct()
+        self.fields['cuenta'].queryset = cuentas_validas
+        self.fields['cuenta_destino'].queryset = cuentas_validas
+        self.fields['cuenta_destino'].required = False
+        self.fields['cuenta'].label_from_instance = self._etiqueta_cuenta
+        self.fields['cuenta_destino'].label_from_instance = self._etiqueta_cuenta
+
+    @staticmethod
+    def _etiqueta_cuenta(cuenta):
+        tipo = cuenta.etiqueta.nombre if cuenta.etiqueta else "Sin tipo"
+        titular = cuenta.clientes.first()
+        nombre_titular = titular.nombre if titular else "Sin titular"
+        return f"{cuenta.numero_cuenta} — {tipo} — {nombre_titular}"
+
+    def clean_monto(self):
+        monto = self.cleaned_data.get('monto')
+        if monto <= 0:
+            raise forms.ValidationError("El monto debe ser mayor a cero.")
+        return monto
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cuenta = cleaned_data.get('cuenta')
+        cuenta_destino = cleaned_data.get('cuenta_destino')
+        tipo = cleaned_data.get('tipo')
+        monto = cleaned_data.get('monto')
+
+        if tipo == 'retiro' and cuenta and monto:
+            if monto > cuenta.saldo:
+                raise forms.ValidationError(
+                    f"Saldo insuficiente. La cuenta '{cuenta.numero_cuenta}' tiene ${cuenta.saldo}."
+                )
+
+        if tipo == 'transferencia':
+            if not cuenta_destino:
+                raise forms.ValidationError("Debes indicar la cuenta destino para una transferencia.")
+            if cuenta == cuenta_destino:
+                raise forms.ValidationError("La cuenta origen y destino no pueden ser la misma.")
+            if cuenta and monto and monto > cuenta.saldo:
+                raise forms.ValidationError(
+                    f"Saldo insuficiente en '{cuenta.numero_cuenta}' para transferir ${monto}."
+                )
+
+        return cleaned_data

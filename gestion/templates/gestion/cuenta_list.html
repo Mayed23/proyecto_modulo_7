@@ -25,10 +25,13 @@
                     <h3 class="mb-0">{{ cuenta.numero_cuenta }}</h3>
                     <span class="aw-chip">{{ cuenta.etiqueta.nombre|default:"Sin tipo" }}</span>
                 </div>
-                <p class="text-muted small mb-1">{{ cuenta.titularidad }}</p>
+                <p class="aw-text small mb-1">{{ cuenta.titularidad }}</p>
                 <p class="aw-monto-positivo fs-4 mb-3">{{ cuenta.saldo|floatformat:0 }}</p>
-                <p class="small text-muted mb-3">
+                <p class="aw-text small mb-3">
                     {% for cliente in cuenta.clientes.all %}{{ cliente.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </p>
+                <p class="small text-muted mb-3">
+                    <i class="bi bi-calendar3"></i> Creada el {{ cuenta.fecha_creacion|date:"d/m/Y" }}
                 </p>
 
                 <div class="d-flex align-items-center gap-2">

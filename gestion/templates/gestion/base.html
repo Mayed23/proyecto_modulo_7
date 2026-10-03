@@ -40,6 +40,9 @@
                         <a href="{% url 'cuenta_list' %}" class="nav-link"><i class="bi bi-credit-card"></i> Cuentas</a>
                     </li>
                     <li class="nav-item">
+                        <a href="{% url 'transaccion_list' %}" class="nav-link"><i class="bi bi-arrow-left-right"></i> Transacciones</a>
+                    </li>
+                    <li class="nav-item">
                         <form method="POST" action="{% url 'logout' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm aw-btn-outline"><i class="bi bi-box-arrow-right"></i> Salir</button>

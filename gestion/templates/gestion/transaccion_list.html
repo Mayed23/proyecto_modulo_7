@@ -1,0 +1,100 @@
+{% extends "gestion/base.html" %}
+{% block title %}Transacciones{% endblock %}
+{% block content %}
+<main>
+<section class="container">
+    <div class="row align-items-center">
+        <div class="col-6">
+            <h1 class="m-0">Transacciones</h1>
+            <p>Historial de movimientos</p>
+        </div>
+        <div class="col-6 d-flex justify-content-end">
+            <a href="{% url 'transaccion_form' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva transacción
+            </a>
+        </div>
+    </div>
+</section>
+<section class="container mb-3">
+    <form method="get" class="d-flex gap-2 flex-wrap align-items-end">
+        <div>
+            <label class="small text-muted d-block">Cuenta</label>
+            <select name="cuenta" class="form-select form-select-sm">
+                <option value="">Todas</option>
+                {% for c in cuentas %}
+                <option value="{{ c.id }}" {% if cuenta_seleccionada == c.id|stringformat:"s" %}selected{% endif %}>
+                    {{ c.numero_cuenta }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="small text-muted d-block">Cliente</label>
+            <select name="cliente" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                {% for cl in clientes %}
+                <option value="{{ cl.id }}" {% if cliente_seleccionado == cl.id|stringformat:"s" %}selected{% endif %}>
+                    {{ cl.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-sm btn-primary">
+            <i class="bi bi-funnel"></i> Filtrar
+        </button>
+
+        {% if cuenta_seleccionada or cliente_seleccionado %}
+        <a href="{% url 'transaccion_list' %}" class="btn btn-sm aw-btn-outline">Limpiar</a>
+        {% endif %}
+    </form>
+</section>
+
+<section class="container">
+    <div class="card aw-card p-3">
+        <table class="table table-borderless align-middle mb-0" style="color: var(--aw-text);">
+            <thead>
+                <tr class="text-muted small">
+                    <th>Fecha</th>
+                    <th>Cuenta</th>
+                    <th>Tipo</th>
+                    <th>Monto</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transacciones %}
+                <tr style="border-bottom: 1px solid var(--aw-card-border);">
+                    <td class="small text-muted">{{ t.fecha|date:"d/m/Y H:i" }}</td>
+                    <td>{{ t.cuenta.numero_cuenta }}</td>
+                    <td>
+                        {% if t.tipo == 'deposito' %}
+                        <span class="aw-chip" style="border-color: var(--aw-accent); color: var(--aw-accent);">{{ t.get_tipo_display }}</span>
+                        {% elif t.tipo == 'retiro' %}
+                        <span class="aw-chip" style="border-color: var(--aw-danger); color: var(--aw-danger);">{{ t.get_tipo_display }}</span>
+                        {% else %}
+                        <span class="aw-chip">{{ t.get_tipo_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="{% if t.tipo == 'deposito' %}aw-monto-positivo{% elif t.tipo == 'retiro' %}aw-monto-negativo{% elif t.tipo == 'transferencia' and t.cuenta_destino %}aw-monto-negativo{% else %}aw-monto-positivo{% endif %}">
+                        {% if t.tipo == 'retiro' or t.tipo == 'transferencia' and t.cuenta_destino %}-{% endif %}${{ t.monto|floatformat:0 }}
+                    </td>
+                    <td class="small text-muted">{{ t.descripcion|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">Todavía no hay transacciones registradas</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+</main>
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const boton = this.querySelector('button[type="submit"]');
+        boton.disabled = true;
+        boton.innerHTML = 'Procesando...';
+});
+</script>
+{% endblock %}
