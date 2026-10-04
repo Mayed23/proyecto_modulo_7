@@ -1,0 +1,42 @@
+{% extends "gestion/base.html" %}
+{% block title %}Etiquetas{% endblock %}
+{% block content %}
+<main>
+<section class="container">
+    <div class="row align-items-center">
+        <div class="col-6">
+            <h1 class="m-0">Etiquetas</h1>
+            <p>Tipos de cuenta disponibles</p>
+        </div>
+        <div class="col-6 d-flex justify-content-end">
+            <a href="{% url 'etiqueta_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva etiqueta
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row g-3 justify-content-center">
+        {% for etiqueta in etiquetas %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card aw-card p-3 h-100">
+                <h3 class="mb-2">{{ etiqueta.nombre }}</h3>
+                <p class="small text-muted mb-3">
+                    {{ etiqueta.cuentas.count }} cuenta{{ etiqueta.cuentas.count|pluralize }} asociada{{ etiqueta.cuentas.count|pluralize }}
+                </p>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'etiqueta_update' etiqueta.pk %}" class="aw-link-muted">Editar</a>
+                    <a href="{% url 'etiqueta_delete' etiqueta.pk %}" class="aw-link-muted aw-link-danger">Eliminar</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-md-6 col-lg-4">
+            <p class="text-center">Todavía no hay etiquetas registradas</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+</main>
+{% endblock %}

@@ -148,3 +148,4 @@ MAILERS = {
 LOGIN_URL = 'login' 
 LOGIN_REDIRECT_URL = 'cliente_list'
 LOGOUT_REDIRECT_URL = 'login'
+

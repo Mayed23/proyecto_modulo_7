@@ -3,7 +3,8 @@ from .views import (
     ClienteListView, ClienteCreateView, ClienteUpdateView, ClienteDeleteView,
     PerfilClienteCreateView, PerfilClienteUpdateView, PerfilClienteListView, PerfilClienteDeleteView,
     CuentaCreateView, CuentaListView, CuentaUpdateView, CuentaDeleteView,
-    TransaccionListView, TransaccionCreateView
+    TransaccionListView, TransaccionCreateView,
+    EtiquetaCreateView, EtiquetaListView, EtiquetaUpdateView,EtiquetaDeleteView
 )
 
 urlpatterns = [
@@ -24,4 +25,9 @@ urlpatterns = [
 
     path('transaccion/', TransaccionListView.as_view(), name='transaccion_list'),
     path('transaccion/nuevo/', TransaccionCreateView.as_view(), name='transaccion_form'),
+
+    path('etiquetas/', EtiquetaListView.as_view(), name='etiqueta_list'),
+    path('etiquetas/nueva/', EtiquetaCreateView.as_view(), name='etiqueta_create'),
+    path('etiquetas/<int:pk>/editar/', EtiquetaUpdateView.as_view(), name='etiqueta_update'),
+    path('etiquetas/<int:pk>/eliminar/', EtiquetaDeleteView.as_view(), name='etiqueta_delete'),
 ]

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente, PerfilCliente, Cuenta, Transaccion
+from .models import Cliente, PerfilCliente, Cuenta, Transaccion, Etiqueta
 from django.contrib.auth.forms import AuthenticationForm
 
 class ClienteForm(forms.ModelForm):
@@ -54,6 +54,13 @@ class PerfilClienteForm(forms.ModelForm):
     class Meta:
         model = PerfilCliente
         fields = ['cliente', 'rut', 'direccion']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Si el perfil ya existe (edición), el RUT no se puede modificar
+        if self.instance.pk:
+            self.fields['rut'].disabled = True
+            self.fields['rut'].help_text = "El RUT no se puede modificar una vez registrado."
 
     def clean_cliente(self):
         cliente = self.cleaned_data.get('cliente')
@@ -146,3 +153,10 @@ class TransaccionForm(forms.ModelForm):
                 )
 
         return cleaned_data
+class EtiquetaForm(forms.ModelForm):
+    class Meta:
+        model = Etiqueta
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Ahorro, Corriente, Nómina'}),
+        }

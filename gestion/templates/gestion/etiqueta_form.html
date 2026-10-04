@@ -1,5 +1,5 @@
 {% extends "gestion/base.html" %}
-{% block title %}Nueva transacción{% endblock %}
+{% block title %}Formulario etiqueta{% endblock %}
 {% block content %}
 <main>
 <div class="container py-5">
@@ -7,24 +7,19 @@
         <div class="col-md-7 col-lg-6">
             <div class="card aw-card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>Nueva transacción</h1>
-                    <a href="{% url 'transaccion_list' %}" class="btn btn-sm btn-danger">Cancelar</a>
+                    <h1>Datos de la etiqueta</h1>
+                    <a href="{% url 'etiqueta_list' %}" class="btn btn-sm btn-danger">Cancelar</a>
                 </div>
                 <form method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
-                    <p id="saldo_disponible" class="small" style="color: var(--aw-text-muted);"></p>
                     <button type="submit" class="btn btn-success mt-4">
-                        <i class="bi bi-check-circle"></i> Registrar
+                        <i class="bi bi-check-circle"></i> Guardar
                     </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    const saldosPorCuenta = {{ saldos_json|safe }};
-</script>
 </main>
 {% endblock %}

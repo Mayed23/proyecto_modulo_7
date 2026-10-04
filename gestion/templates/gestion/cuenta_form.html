@@ -12,7 +12,30 @@
                 </div>
                 <form method="post">
                     {% csrf_token %}
-                    {{ form.as_p }}
+
+                    {{ form.numero_cuenta.label_tag }}
+                    {{ form.numero_cuenta }}
+                    {{ form.numero_cuenta.errors }}
+                    <br><br>
+
+                    {{ form.saldo.label_tag }}
+                    {{ form.saldo }}
+                    {{ form.saldo.errors }}
+                    <br><br>
+
+                    {{ form.etiqueta.label_tag }}
+                    {{ form.etiqueta }}
+                    {{ form.etiqueta.errors }}
+                    <br><br>
+
+                    <label for="buscador_clientes">Clientes</label>
+                    <input type="text"
+                           id="buscador_clientes"
+                           class="form-control mb-2"
+                           placeholder="Escribe para filtrar...">
+                    {{ form.clientes }}
+                    {{ form.clientes.errors }}
+
                     <button type="submit" class="btn btn-success mt-4">
                         <i class="bi bi-check-circle"></i> Guardar
                     </button>

@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const formatoCLP = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' });
 
-
+    // ============================
+    // Selector de cuentas (cuando el cliente tiene varias)
+    // ============================
     document.querySelectorAll('.aw-cuenta-selector').forEach(grupo => {
         const botones = grupo.querySelectorAll('.btn-cuenta');
         const card = grupo.closest('.aw-card');
@@ -32,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ============================
+    // Buscador simple para el campo de clientes (formulario de Cuenta)
+    // ============================
     const buscador = document.getElementById('buscador_clientes');
     const selectClientes = document.getElementById('id_clientes');
 
@@ -43,5 +48,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 opcion.hidden = !coincide;
             });
         });
+    }
+
+    // ============================
+    // Mostrar saldo disponible al elegir cuenta (formulario de Transacción)
+    // ============================
+    const selectCuenta = document.getElementById('id_cuenta');
+    const saldoTexto = document.getElementById('saldo_disponible');
+
+    if (selectCuenta && saldoTexto && typeof saldosPorCuenta !== 'undefined') {
+        function actualizarSaldo() {
+            const idSeleccionado = selectCuenta.value;
+            const saldo = saldosPorCuenta[idSeleccionado];
+            if (saldo !== undefined) {
+                saldoTexto.textContent = `Saldo disponible: ${formatoCLP.format(saldo)}`;
+            } else {
+                saldoTexto.textContent = '';
+            }
+        }
+
+        selectCuenta.addEventListener('change', actualizarSaldo);
+        actualizarSaldo(); // muestra el saldo si ya hay una cuenta preseleccionada
     }
 });

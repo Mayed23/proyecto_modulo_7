@@ -13,7 +13,7 @@
     <!--TIPOGRAFIA-->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- ESTILOS -->
-    <script src="{% static 'gestion/js/main.js' %}"></script>
+    
     <link rel="stylesheet" href="{% static 'gestion/css/style.css' %}">
 
 </head>
@@ -41,6 +41,9 @@
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'transaccion_list' %}" class="nav-link"><i class="bi bi-arrow-left-right"></i> Transacciones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'etiqueta_list' %}" class="nav-link"><i class="bi bi-tag"></i> Etiquetas</a>
                     </li>
                     <li class="nav-item">
                         <form method="POST" action="{% url 'logout' %}">

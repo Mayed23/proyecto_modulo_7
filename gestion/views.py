@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .models import Cliente, PerfilCliente, Cuenta, Transaccion
-from .forms import ClienteForm, PerfilClienteForm, CuentaForm, TransaccionForm
+from .models import Cliente, PerfilCliente, Cuenta, Transaccion, Etiqueta
+from .forms import ClienteForm, PerfilClienteForm, CuentaForm, TransaccionForm, EtiquetaForm
 
 
 class ClienteListView(LoginRequiredMixin, ListView):
@@ -201,6 +203,14 @@ class TransaccionCreateView(LoginRequiredMixin, CreateView):
     template_name = 'gestion/transaccion_form.html'
     success_url = reverse_lazy('transaccion_list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cuentas_data = {
+            str(c.id): float(c.saldo) for c in Cuenta.objects.filter(activa=True)
+        }
+        context['saldos_json'] = json.dumps(cuentas_data, cls=DjangoJSONEncoder)
+        return context
+
     def form_valid(self, form):
         respuesta = super().form_valid(form)
         cuenta = self.object.cuenta
@@ -215,10 +225,8 @@ class TransaccionCreateView(LoginRequiredMixin, CreateView):
 
         elif self.object.tipo == 'transferencia':
             destino = self.object.cuenta_destino
-
             cuenta.saldo -= self.object.monto
             cuenta.save()
-
             destino.saldo += self.object.monto
             destino.save()
 
@@ -232,4 +240,54 @@ class TransaccionCreateView(LoginRequiredMixin, CreateView):
             )
 
         messages.success(self.request, "Transacción registrada correctamente.")
+        return respuesta
+
+class EtiquetaListView(LoginRequiredMixin, ListView):
+    model = Etiqueta
+    template_name = 'gestion/etiqueta_list.html'
+    context_object_name = 'etiquetas'
+    ordering = ['nombre']
+
+
+class EtiquetaCreateView(LoginRequiredMixin, CreateView):
+    model = Etiqueta
+    form_class = EtiquetaForm
+    template_name = 'gestion/etiqueta_form.html'
+    success_url = reverse_lazy('etiqueta_list')
+
+    def form_valid(self, form):
+        respuesta = super().form_valid(form)
+        messages.success(self.request, f"Etiqueta '{self.object.nombre}' creada correctamente.")
+        return respuesta
+
+
+class EtiquetaUpdateView(LoginRequiredMixin, UpdateView):
+    model = Etiqueta
+    form_class = EtiquetaForm
+    template_name = 'gestion/etiqueta_form.html'
+    success_url = reverse_lazy('etiqueta_list')
+
+    def form_valid(self, form):
+        respuesta = super().form_valid(form)
+        messages.success(self.request, f"Etiqueta '{self.object.nombre}' actualizada correctamente.")
+        return respuesta
+
+
+class EtiquetaDeleteView(LoginRequiredMixin, DeleteView):
+    model = Etiqueta
+    template_name = 'gestion/etiqueta_confirm_delete.html'
+    success_url = reverse_lazy('etiqueta_list')
+
+    def form_valid(self, form):
+        if self.object.cuentas.exists():
+            messages.error(
+                self.request,
+                f"No se puede eliminar la etiqueta '{self.object.nombre}': "
+                f"hay cuentas que la están usando actualmente."
+            )
+            return redirect('etiqueta_list')
+
+        nombre = self.object.nombre
+        respuesta = super().form_valid(form)
+        messages.success(self.request, f"Etiqueta '{nombre}' eliminada correctamente.")
         return respuesta
